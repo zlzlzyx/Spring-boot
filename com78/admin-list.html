@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>
+            后台管理系统
+        </title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="format-detection" content="telephone=no">
+        <link rel="stylesheet" href="./css/x-admin.css" media="all">
+		<!--    引入 本地的 vue  省略了 static 文件夹 -->
+		<script src="./js/vue.js" type="text/javascript" charset="utf-8"></script>
+		<!--    引入本地的 axios  用来 发送异步请求-->
+		<script src="./js/axios.js" type="text/javascript" charset="utf-8"></script>
+		<!-- 引入样式 -->
+		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+		<!-- 引入组件库 -->
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    </head>
+    <body>
+        <div class="x-nav">
+            <span class="layui-breadcrumb">
+              <a><cite>首页</cite></a>
+              <a><cite>会员管理</cite></a>
+              <a><cite>管理员列表</cite></a>
+            </span>
+            <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"  href="javascript:location.replace(location.href);" title="刷新"><i class="layui-icon" style="line-height:30px">ဂ</i></a>
+        </div>
+        <div class="x-body" id="app">
+            <form class="layui-form x-center" action="" style="width:80%">
+                <div class="layui-form-pane" style="margin-top: 15px;">
+                  <div class="layui-form-item">
+                  		<label class="layui-form-label">日期范围</label>
+                  		<template>
+                  			<div class="block">
+                  				开始日期
+                  				<el-date-picker v-model="query.startdate" 
+                  				value-format="yyyy-MM-dd HH:mm:ss" type="datetime" placeholder="选择日期">
+                  				</el-date-picker>
+                  				结束日期
+                  				<el-date-picker v-model="query.enddate" 
+                  				value-format="yyyy-MM-dd HH:mm:ss" type="datetime" placeholder="选择日期">
+                  				</el-date-picker>
+                  			</div>
+                  		</template>
+                  
+                  		
+                  		<div class="layui-input-inline">
+                  			<input type="text" v-model="query.username"  placeholder="请输入登录名" autocomplete="off"
+                  				class="layui-input">
+                  		</div>
+                  		<div class="layui-input-inline" style="width:80px">
+                  			<button type="button" @click="querylist2()" class="layui-btn"  ><i
+                  					class="layui-icon">&#xe615;</i></button>
+                  		</div>
+                  	</div>
+                  </div>
+            </form>
+<!--            <xblock> -->
+						<button class="layui-btn layui-btn-danger" @click="a_delAll()"><i
+							class="layui-icon">&#xe640;</i>批量删除</button>
+            	<!-- <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon">&#xe640;</i>批量删除</button> -->
+            	<!-- <button class="layui-btn" onclick="admin_add('添加用户','admin-add.html','600','500')"><i class="layui-icon">&#xe608;</i>添加</button> -->
+            	<span class="x-right" style="line-height:40px">共有数据：<span class="layui-badge">{{total}}</span> 条</span>
+<!--            </xblock> -->
+<!-- 添加管理员 -->
+		<el-button type="primary" @click="dialogFormVisible = true"><i class="layui-icon">&#xe608;</i>添加管理员</el-button>
+
+			<el-dialog title="管理员添加" :visible.sync="dialogFormVisible" top="1vh">
+				<el-form :model="admin">
+					<el-form-item label="登录名" :label-width="formLabelWidth">
+						<el-col :span="11">
+						      <el-input v-model="admin.username" autocomplete="off"></el-input>
+						    </el-col>
+						    <el-col class="line" :span="2">密码</el-col>
+						    <el-col :span="11">
+						      <el-input v-model="admin.password" autocomplete="off"></el-input>
+						    </el-col>
+					</el-form-item>
+					<el-form-item label="性别" :label-width="formLabelWidth">
+						<el-select v-model="admin.sex" placeholder="请选择性别">
+							<el-option label="男" :value="1"></el-option>
+							<el-option label="女" :value="2"></el-option>
+						</el-select>
+					</el-form-item>
+					<el-form-item label="角色" :label-width="formLabelWidth">
+						<el-select v-model="admin.rolename" placeholder="请选择角色">
+							<el-option label="超级管理员" value="超级管理员"></el-option>
+							<el-option label="编辑人员" value="编辑人员"></el-option>
+							<el-option label="问题维护" value="问题维护"></el-option>
+						</el-select>
+							<!-- <el-input v-model="admin.rolename" autocomplete="off" placeholder="请输入角色"></el-input> -->
+						
+						<!-- <template>
+							 <el-select v-model="value" placeholder="请选择角色">
+							    <el-option v-for="(item,index) in rolearr" 
+									:key="index" true_label="1" false_label="0" 
+									@change="checked=>handleCheckedroleChange(checked,item) in rolearr">
+							    </el-option>
+							  </el-select>
+							  
+						</template>  -->
+					</el-form-item>
+					<el-form-item label="电话" :label-width="formLabelWidth">
+						<el-input v-model="admin.tel" autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="邮件" :label-width="formLabelWidth">
+						<el-input v-model="admin.email" autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="昵称" :label-width="formLabelWidth">
+						<el-input v-model="admin.nickname" autocomplete="off"></el-input>
+					</el-form-item>
+				</el-form>
+				<div slot="footer" class="dialog-footer">
+					<el-button @click="dialogFormVisible = false">取 消</el-button>
+					<el-button type="primary" @click="addadmin()">确 定</el-button>
+				</div>
+		</el-dialog>
+
+
+	
+
+            <table class="layui-table">
+                <thead>
+                    <tr>
+                        <th>
+                           <!-- <input type="checkbox" name="" value=""> -->
+						   <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll"
+						   @change="handleCheckAllChange">全选
+						   </el-checkbox>
+                        </th>
+                        <th>
+                            ID
+                        </th>
+                        <th>
+                            登录名
+                        </th>
+                        <th>
+                            手机
+                        </th>
+                        <th>
+                            邮箱
+                        </th>
+                        <th>
+                            角色
+                        </th>
+                        <th>
+                            加入时间
+                        </th>
+                        <th>
+                            状态
+                        </th>
+                        <th>
+                            操作
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(u,i) in adminlist">
+                        <td>
+                            <!-- <input type="checkbox" value="1" name=""> -->
+							<el-checkbox-group v-model="checkedIds" @change="handleCheckedCitiesChange">
+							  <el-checkbox :label="u.users.id" :key="u.users.id">{{u.users.id}}</el-checkbox>
+							</el-checkbox-group>
+                        </td>
+                        <td>
+                            {{u.users.id}}
+                        </td>
+						<td>
+							<u style="cursor:pointer"
+								@click="admin_show(u)">
+						<!-- admin -->
+								{{u.users.username}}
+							</u>
+						</td>
+                       <!-- <td>
+                            {{u.users.username}}
+                        </td> -->
+                        <td >
+                            {{u.admin.tel}}
+                        </td>
+                        <td >
+                            {{u.admin.email}}
+                        </td>
+                        <td >
+                            {{u.admin.rolename}}
+                        </td>
+                        <td>
+                           {{u.users.createTime}}
+                        </td>
+                        <td class="td-status">
+                            <span class="layui-btn layui-btn-normal ">
+                               {{u.admin.status==1 ?'已启用' :'停用'}}
+                            </span>
+                        </td>
+                        <td class="td-manage">
+                            <!-- <a style="text-decoration:none" onclick="admin_stop(this,'10001')" href="javascript:;" title="停用">
+                                <i class="layui-icon">&#xe601;</i>
+                            </a> -->
+							<!-- 停用 -->
+							<template>
+								<el-button type="text" @click="admin_stop(u.users.id,u.admin.status)" href="javascript:;" title="停用"><i class="layui-icon">&#xe601;</i></el-button>
+							</template>
+							
+  <!--                          <a title="编辑" href="javascript:;" onclick="admin_edit('编辑','admin-edit.html','4','','510')"
+                            class="ml-5" style="text-decoration:none">
+                                <i class="layui-icon">&#xe642;</i>
+                            </a> -->
+							<template>
+								<el-button type="text" @click="a_toedit(u.admin,u.users.id)"><i class="layui-icon">&#xe642;</i></el-button>
+							</template>
+							
+							<template>
+								<el-button type="text" @click="a_toeditpwd(u.users)">
+									<i class="layui-icon">&#xe631;</i>
+								</el-button>
+							</template>
+							
+                            <!-- <a title="删除" href="javascript:;" onclick="admin_del(this,'1')" 
+                            style="text-decoration:none">
+                                <i class="layui-icon">&#xe640;</i>
+                            </a> -->
+							<template>
+								<el-button type="text" @click="admin_del(u.users.id)"><i class="layui-icon">&#xe640;</i></el-button>
+							</template>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+		
+            <!-- <div id="page"></div> -->
+			<div class="block">
+				<span class="demonstration">完整功能</span>
+				<el-pagination
+				  @size-change="handleSizeChange"
+				  @current-change="handleCurrentChange"
+				  :current-page="1"
+				  :page-sizes="[2, 3, 4, 5]"
+				  :page-size="query.size"
+				  layout="total, sizes, prev, pager, next, jumper"
+				  :total="total">
+				</el-pagination>
+			</div>
+			
+			<!-- 管理员信息显示-->
+			<el-dialog title="管理员信息" :visible.sync="showdialogFormVisible" top="1vh">
+					<div class="x-body">
+						<blockquote class="layui-elem-quote">
+							<img src="./images/logo.png" class="layui-circle" style="width:50px;float:left">
+							<dl style="margin-left:80px; color:#019688">
+							<dt><span >{{showUserAdmin.users.username}}</span></dt>
+							<!-- <dd style="margin-left:0">{{showUserMember.member.sign}}</dd> -->
+						  </dl>
+						</blockquote>
+						<div class="pd-20">
+						  <table  class="layui-table" lay-skin="line">
+							<tbody>
+								
+							  <tr>
+								<th  width="80">性别：</th>
+								<td>{{showUserAdmin.admin.sex == 1?'男':'女'}}</td>
+							  </tr>
+							  <tr>
+								<th>手机：</th>
+								
+								<td>{{showUserAdmin.admin.tel}}</td>
+							  </tr>
+							  <tr>
+								<th>邮箱：</th>
+								
+								<td>{{showUserAdmin.admin.email}}</td>
+							  </tr>
+							  <tr>
+								<th>角色：</th>
+								
+								<td>{{showUserAdmin.admin.rolename}}</td>
+							  </tr>
+							  <tr>
+								<th>注册时间：</th>
+								<td>{{showUserAdmin.users.createTime}}</td>
+								
+							  </tr>
+							</tbody>
+						  </table>
+						</div>
+					</div>
+					
+			</el-dialog>
+			
+			<!-- 管理员修改 -->
+			<el-dialog title="管理员修改" :visible.sync="editdialogFormVisible" top="1vh">
+				<div class="x-body">
+					<form class="layui-form">
+						<div class="layui-form-item">
+							<label for="L_email" class="layui-form-label">
+								邮箱
+							</label>
+							<div class="layui-input-inline">
+								<input v-model="editAdmin.email" input type="text" id="L_email" name="email" required lay-verify="email"
+								autocomplete="off" value="826096331@qq.com" class="layui-input">
+								
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<label for="L_username" class="layui-form-label">
+								角色
+							</label>
+							<div class="layui-input-inline">
+								<input v-model="editAdmin.rolename" input type="text" id="L_username" name="username" required lay-verify="required"
+								autocomplete="off" value="zhibinm" class="layui-input">
+							</div>
+							<div class="layui-inline">
+								<div class="layui-input-inline">
+									<input type="radio" name="sex" value="0" checked title="男">
+									<input type="radio" name="sex" value="1" title="女">
+								</div>
+							</div>
+						</div>
+						
+					</form>
+				</div>
+				<div slot="footer" class="dialog-footer">
+					<el-button @click="editdialogFormVisible = false">取 消</el-button>
+					<el-button type="primary" @click="updateAdmin()">确 定</el-button>
+				</div>
+			</el-dialog>
+			
+			<!-- 密码修改 -->
+			<el-dialog title="密码修改" :visible.sync="editPwddialogFormVisible" top="1vh">
+				<div class="x-body">
+					<form class="layui-form">
+						<div class="layui-form-item">
+							<label for="L_username" class="layui-form-label">
+								登录名
+							</label>
+							<div class="layui-input-inline">
+								<input v-model="editUsers.username" type="text" id="L_username" name="username" disabled="" value="小明" class="layui-input">
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<label for="L_repass" class="layui-form-label">
+								<span class="x-red">*</span>旧密码
+							</label>
+							<div class="layui-input-inline">
+								<input v-model="editUsers.oldpassword" type="password" id="L_repass" name="oldpass" required="" lay-verify="required"
+								autocomplete="off" class="layui-input">
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<label for="L_pass" class="layui-form-label">
+								<span class="x-red">*</span>新密码
+							</label>
+							<div class="layui-input-inline">
+								<input v-model="editUsers.newpassword" type="password" id="L_pass" name="newpass" required="" lay-verify="required"
+								autocomplete="off" class="layui-input">
+							</div>
+							<div class="layui-form-mid layui-word-aux">
+								6到16个字符
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<label for="L_repass" class="layui-form-label">
+								<span class="x-red">*</span>确认密码
+							</label>
+							<div class="layui-input-inline">
+								<input v-model="editUsers.renewpassword" type="password" id="L_repass" name="repass" required="" lay-verify="required"
+								autocomplete="off" class="layui-input">
+							</div>
+						</div>
+					</form>
+				</div>
+				<div slot="footer" class="dialog-footer">
+					<el-button @click="editPwddialogFormVisible = false">取 消</el-button>
+					<el-button type="primary" @click="a_updatePwd()">确 定</el-button>
+				</div>
+			</el-dialog>
+			
+        </div>
+        <script src="./lib/layui/layui.js" charset="utf-8"></script>
+        <script src="./js/x-layui.js" charset="utf-8"></script>
+        <script>
+			new Vue({
+				el: '#app',
+				data: {
+					// options: [{
+					//           value: '选项1',
+					//           label: '超级管理员'
+					//         }, {
+					//           value: '选项2',
+					//           label: '编辑人员'
+					//         }, {
+					//           value: '选项3',
+					//           label: '问题维护'
+					//         }],
+					// 		value:'',
+					// rolearr:['超级管理员','编辑人员','问题维护'],
+					// choiceArr:[],
+					dialogFormVisible: false,
+					formLabelWidth: '120px',
+					admin: {
+						username: '',
+						sex: 1,
+						tel: '',
+						email: '',
+						status:'',
+						nickname: '',
+						rolename:'',
+						password:'',
+					},
+					adminlist:[],
+					query:{
+						username:'',
+						startdate:'',
+						enddate:'',
+						page:1,
+						size:3
+					},
+					total:10,
+					showdialogFormVisible:false,//显示管理员信息 控制显示
+					// showMember:{}, //定义空对象
+					// showUser:{} 
+					showUserAdmin:{
+						users:{},
+						admin:{}
+					},
+					editdialogFormVisible:false,
+					editAdmin:{},
+					editPwddialogFormVisible:false,
+					editUsers:{},
+					checkAll:false,
+					checkedIds:[],//选中的id
+					ids:[],//当前页所有id
+					isIndeterminate : false
+				},
+				methods: {
+					// handleCheckedroleChange(value,item){
+					// 	console.log(item)//数组里面的数据值
+					// 	// console.log(this.userarr.indexOf(this.userarr.name))//控制台打印显示-1
+					// 	console.log(value)//是否选中，选中true，未选中 false
+					// 	if(value == 1){
+					// 		this.choiceArr.push(item);
+					// 	}else{
+					// 		this.choiceArr.splice(this.choiceArr.indexOf(item),1);
+					// 	}
+					// 	console.log(this.choiceArr)
+					// },
+					// 批量删除
+					a_delAll(){
+						// 判断是否选中
+						if(this.checkedIds.length < 1){
+							this.$message("请选中需要删除的数据！o^o!")
+							return ;
+						}
+						// join方法 可以通过分隔符拼接成字符
+						
+						axios.get("http://localhost:8080/user/a_delAll",
+						{
+							params:{ids:this.checkedIds.join(',')}
+						})
+						.then((d) =>{
+							this.$message("批量删除成功")
+							// 判断当前页的数据是否删除完 如果没有删除完 就停留在当前页
+							// 如果删除完了 就设置page页 往前一页
+							// 如果是第一页删除完了，就停留在当前页
+							this.query.page=1
+							this.querylist2()
+						})
+						
+					},
+					handleCheckAllChange(val) {
+					  this.checkedIds = val ? this.ids : [];
+					  this.isIndeterminate = false;
+					},
+					handleCheckedCitiesChange(value) {
+					  console.log(value)
+					  let checkedCount = value.length;
+					  this.checkAll = checkedCount === this.ids.length;
+					  this.isIndeterminate = checkedCount > 0 && checkedCount < this.ids.length;
+					},
+					// 显示管理员信息
+					admin_show(u){
+						// true 显示会员信息
+						this.showdialogFormVisible = true;
+						// u 当前行对象的所有数据
+						this.showUser = u.users;
+						this.showAdmin = u.admin;
+						//跟之前对象一样 两层结构
+						this.showUserAdmin =u ;
+					},
+					// 添加管理员
+					addadmin(){
+						// console.log(this.options[value])
+						console.log(this.admin)
+						// 用户名或密码必须有
+						if(this.admin.username == '' || this.admin.password== '')
+						{
+							this.$message({
+							message: '用户名或者密码没有输入',
+							type: 'warning'
+							});
+							return ;
+						}
+
+						// 把数据传递给后端 进行添加操作
+						axios.get("http://localhost:8080/user/addadmin",{params:this.admin})
+						.then((d) =>{
+							console.log(d)
+							// 输出信息
+							this.$message(d.data)
+							// 关闭弹窗
+							this.dialogFormVisible = false
+							this.querylist2()
+						});
+						// alert("添加成功！！")
+					},
+					// 修改管理员
+					a_toedit(a,id){
+						this.editdialogFormVisible = true;
+						this.editAdmin =a ;
+						this.editAdmin.id = id;
+					},
+					updateAdmin(){
+						axios.get("http://localhost:8080/user/updateAdmin",{
+							params:this.editAdmin
+						})
+						.then((d) => {
+								this.$message ("修改会员成功!")
+									this.editdialogFormVisible=false
+								this.querylist2()
+						});
+					},
+					a_toeditpwd(u){
+						this.editPwddialogFormVisible = true;
+						this.editUsers =u ;
+					},
+					a_updatePwd(u){
+						console.log(this.editUsers)
+						if(this.editUsers.oldpassword == null || this.editUsers.oldpassword.trim() == '' ||
+						this.editUsers.newpassword == null || this.editUsers.newpassword.trim() == '' ||
+						this.editUsers.renewpassword == null || this.editUsers.renewpassword.trim() == '')
+						{
+							this.$message("没有输入完整，或者输入的字符为空")
+							return ;
+						}
+						// 比较输入的旧密码 和原先的密码
+						if(this.editUsers.oldpassword != this.editUsers.password){
+							this.$message("旧密码输入错误！")
+							return ;
+						}
+						// 比较新密码和确认密码
+						if(this.editUsers.newpassword != this.editUsers.renewpassword){
+							this.$message("新密码和确认密码输入不一致！")
+							return ;
+						}
+						// 旧密码和新密码不能一致
+						if(this.editUsers.oldpassword ==this.editUsers.newpassword){
+							this.$message("新密码不能与旧密码一致！！！")
+							return;
+						}
+						axios.get("http://localhost:8080/user/a_updatePwd",{
+							params:{
+								id:this.editUsers.id,
+								password:this.editUsers.newpassword
+							}
+						})
+						.then((d) => {
+							this.$message("修改密码成功!!!o^o")
+							this.editPwddialogFormVisible=false
+							this.querylist2()
+						});
+					},
+					admin_del(aid) {
+					  	this.$confirm('是否删除该会员,是否继续?', '提示', {
+					  	  confirmButtonText: '确定',
+					  	  cancelButtonText: '取消',
+					  	  type: 'warning'
+					  	}).then(() => {
+					  		axios.get("http://localhost:8080/user/delAdmin",
+					  		{
+					  			params:{
+					  				id:aid
+					  			}
+					  		})
+					  		.then((d) => {
+					  			this.$message({
+					  				type: 'success',
+					  				message: '删除成功!'
+					  			});
+					  			this.querylist2()
+					  		});
+					  	}).catch(() => {
+					  	  this.$message({
+					  		type: 'info',
+					  		message: '已取消删除'
+					  	  });          
+					  	});
+					},
+					querylist2(){
+						console.log(this.query)
+						axios.get("http://localhost:8080/user/querylist2",{params:this.query})
+						.then((d) =>{
+							console.log(d)
+							// 看看d到底是什么结构，把里面的useradminlist赋值给adminlist
+							this.adminlist = d.data.list
+							this.total = d.data.total
+							this.ids=[]
+							this.checkedIds =[]
+							this.checkAll =false
+							this.isIndeterminate = false
+							for(var i=0 ;i<this.adminlist.length;i++)
+							{
+								this.ids.push(this.adminlist[i].users.id)
+							}
+						});
+					},
+					handleSizeChange(val) {
+						console.log(`每页 ${val} 条`);
+						this.query.size = val;
+						this.querylist2()
+					  },
+					handleCurrentChange(val) {
+						console.log(`当前页: ${val}`);
+						this.query.page = val;
+						this.querylist2()
+						},
+					admin_stop(id,status) {
+						this.$confirm('是否'+(status==1?'停用':'重新启用')+'该会员,是否继续?', '提示', {
+						  confirmButtonText: '确定',
+						  cancelButtonText: '取消',
+						  type: 'warning'
+						}).then(() => {
+								axios.get("http://localhost:8080/user/a_updateStatus",
+								{
+									params:{
+										adminid:id,
+										adminstatus:status
+									}
+								})
+								.then((d) => {
+									this.$message({
+										type: 'success',
+										message: '修改状态成功!'
+									});
+									this.querylist2()
+								});
+							}).catch(() => {
+							  this.$message({
+								type: 'info',
+								message: '已取消修改'
+							  });          
+							});
+					},
+				
+				},
+				mounted(){
+					this.querylist2()
+					
+				}
+			})
+			
+            layui.use(['laydate','element','laypage','layer'], function(){
+              lement = layui.element();//面包导航
+              
+            });
+
+            //批量删除提交
+             function delAll () {
+                layer.confirm('确认要删除吗？',{icon:3,title:'提示信息'},function(index){
+                    //捉到所有被选中的，发异步进行删除
+                    layer.msg('删除成功', {icon: 1});
+                });
+             }
+             /*添加*/
+            function admin_add(title,url,w,h){
+                x_admin_show(title,url,w,h);
+            }
+
+             /*停用*/
+            function admin_stop(obj,id){
+                layer.confirm('确认要停用吗？',function(index){
+                    //发异步把用户状态进行更改
+                    $(obj).parents("tr").find(".td-manage").prepend('<a style="text-decoration:none" onClick="admin_start(this,id)" href="javascript:;" title="启用"><i class="layui-icon">&#xe62f;</i></a>');
+                    $(obj).parents("tr").find(".td-status").html('<span class="layui-btn layui-btn-disabled layui-btn-mini">已停用</span>');
+                    $(obj).remove();
+                    layer.msg('已停用!',{icon: 5,time:1000});
+                });
+            }
+
+            /*启用*/
+            function admin_start(obj,id){
+                layer.confirm('确认要启用吗？',function(index){
+                    //发异步把用户状态进行更改
+                    $(obj).parents("tr").find(".td-manage").prepend('<a style="text-decoration:none" onClick="admin_stop(this,id)" href="javascript:;" title="停用"><i class="layui-icon">&#xe601;</i></a>');
+                    $(obj).parents("tr").find(".td-status").html('<span class="layui-btn layui-btn-normal layui-btn-mini">已启用</span>');
+                    $(obj).remove();
+                    layer.msg('已启用!',{icon: 6,time:1000});
+                });
+            }
+            //编辑
+            function admin_edit (title,url,id,w,h) {
+                x_admin_show(title,url,w,h); 
+            }
+            /*删除*/
+            function admin_del(obj,id){
+                layer.confirm('确认要删除吗？',{icon:3,title:'提示信息'},function(index){
+                    //发异步删除数据
+                    $(obj).parents("tr").remove();
+                    layer.msg('已删除!',{icon:1,time:1000});
+                });
+            }
+            </script>
+            
+    </body>
+</html>

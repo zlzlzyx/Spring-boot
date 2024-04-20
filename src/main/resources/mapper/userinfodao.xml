@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhanglu.bootruan78.dao.UserinfoDao">
+<!--    id="" 唯一标签名 其他要引用的话 指定这个id-->
+<!--    -->
+<!--id column="id"要映射字段  property=""要封装数据对象属性-->
+    <resultMap id="usermembermap" type="com.zhanglu.bootruan78.dto.UserMember">
+        <id column="id" property="users.id"></id>
+        <result column="username" property="users.username"></result>
+<!--        <result column="name" property="users.name"></result>-->
+        <result column="create_time" property="users.createTime"></result>
+        <result column="password" property="users.password"></result>
+        <result column="type" property="users.type"></result>
+        <result column="sex" property="member.sex"></result>
+        <result column="tel" property="member.tel"></result>
+        <result column="email" property="member.email"></result>
+        <result column="address" property="member.address"></result>
+        <result column="status" property="member.status"></result>
+        <result column="city" property="member.city"></result>
+        <result column="nickname" property="member.nickname"></result>
+        <result column="sign" property="member.sign"></result>
+    </resultMap>
+
+    <select id="querylist" resultMap="usermembermap">
+
+       select * from users u left join member m on u.id=m.id
+       ${ew.customSqlSegment}
+
+    </select>
+
+</mapper>

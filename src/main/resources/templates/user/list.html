@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!--    引入 本地的 vue  省略了 static 文件夹 -->
+    <script th:src="@{/js/vue.js}" type="text/javascript" charset="utf-8"></script>
+    <!--    引入本地的 axios  用来 发送异步请求-->
+    <script th:src="@{/js/axios.js}" type="text/javascript" charset="utf-8"></script>
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+    <div id="app">
+        <el-input
+                placeholder="姓名搜索"
+                v-model="user.name"
+                size="medium"
+                clearable>
+<!--            点击按钮 进行查询 把当前输入框的值 -->
+            <el-button slot="append" icon="el-icon-search" @click="getdata()"></el-button>
+        </el-input>
+
+<!--        el-table 在底部代码 里面实现的for循环 tableDate 循环的列表对象-->
+        <template>
+            <el-table
+                    :data="tableData"
+                    style="width: 100%">
+                <el-table-column
+                        label="用户id"
+                        width="180">
+                    <template slot-scope="scope">
+                        <i class="el-icon-time"></i>
+<!--                        每次循环的对象的属性-->
+                        <span style="margin-left: 10px">{{ scope.row.id }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        label="姓名"
+                        width="180">
+                    <template slot-scope="scope">
+                        <el-popover trigger="hover" placement="top">
+                            <p>姓名: {{ scope.row.name }}</p>
+<!--                            scope.row.sex==1:'男'：‘女’-->
+                            <p>性别: {{ scope.row.sex==1?'男':'女' }}</p>
+                            <div slot="reference" class="name-wrapper">
+                                <el-tag size="medium">{{ scope.row.name }}</el-tag>
+                            </div>
+                        </el-popover>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作">
+                    <template slot-scope="scope">
+                        <el-button
+                                size="mini"
+                                @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                        <el-button
+                                size="mini"
+                                type="danger"
+                                @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </template>
+        <div class="block">
+            <span class="demonstration">完整功能</span>
+            <el-pagination
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page="user.page"
+                    :page-sizes="[2, 3, 4, 5]"
+                    :page-size="user.size"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="totalCount">
+            </el-pagination>
+        </div>
+
+<!--测试-->
+<!--        <button @click="getdata()">请求后端</button>-->
+
+    </div>
+    <script>
+        new Vue({
+            el: "#app",
+            data: {
+                // input: '',
+                user:{
+                    name:'',
+                    page:1,//页数
+                    size:3 //每条显示条数
+                },
+                tableData: [],
+                totalCount:0
+
+            },
+            methods: {
+                handleSizeChange(val) {
+                    // console.log(index, row);
+                    console.log('每页 ${val} 条');
+                    this.user.size=val;
+                    this.getdata();
+                },
+                handleCurrentChange(val) {
+                    // console.log(index, row);
+                    console.log('当前页： ${val} ');
+                //    当前页3
+                    this.user.page=val;
+                    this.getdata();
+                },
+                //编辑修改
+                handleEdit(index, row) {
+                    console.log(index, row);
+                    // this.open()
+                },
+                //删除
+                handleDelete(index, row) {
+                    console.log(index, row);
+                    this.open(row)
+                },
+                getdata(){
+                    // alert("1")
+                    //axios.get 向服务器发送get请求
+                    //.then() 回调函数 接收服务器返回数据
+                    //在发送请求的时候 把查询的参数传递给后端 param 参数放里面
+                    axios.get("http://localhost:8080/vue/list",{params:this.user})
+                        //剪刀函数的写法（d） 函数的列表 里面的d指的就是返回的对象包含了所有数据
+                        .then((d) => {
+                            //    输出在前端控制台上
+                            console.log(d)
+                            //通过对象 . 属性来获取表的数据
+                            console.log(d.data)
+                        //    把返回的数据给到 vue变量
+                            this.tableData=d.data.list
+                            this.totalCount = d.data.count
+                        });
+                },
+                open(row) {
+                    this.$confirm('此操作将永久删除该数据, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        //确定按钮 说明就是要删除
+                        //调用后端请求 传递id{形参名称userid:真正传递的数值row.id}
+                        axios.get("http://localhost:8080/vue/delete",{params:{userid:row.id}}).then(
+                            (d)=>{
+                                if(d.data >0 ){
+                                    this.$message({
+                                        type: 'success',
+                                        message: '删除成功！^O^ ^O^'
+                                    });
+                                    this.user.page=1
+                                    this.getdata()
+                                }else{
+                                    this.$message({
+                                        type: 'info',
+                                        message: '删除失败!'
+                                    });
+                                }
+                            }
+                        );
+
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    });
+                }
+
+            },
+            mounted(){
+                // alert(1)
+            //    刷新页面 就去调用这个异步请求后端 获取数据的方法
+                this.getdata()
+            }
+
+        })
+    </script>
+</body>
+</html>

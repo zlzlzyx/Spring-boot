@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>
+            后台管理系统
+        </title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="format-detection" content="telephone=no">
+        <link rel="stylesheet" href="./css/x-admin.css" media="all">
+		<!--    引入 本地的 vue  省略了 static 文件夹 -->
+		<script src="./js/vue.js" type="text/javascript" charset="utf-8"></script>
+		<!--    引入本地的 axios  用来 发送异步请求-->
+		<script src="./js/axios.js" type="text/javascript" charset="utf-8"></script>
+		<!-- 引入样式 -->
+		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+		<!-- 引入组件库 -->
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+	</head>
+    <body>
+        <div class="x-nav">
+            <span class="layui-breadcrumb">
+              <a><cite>首页</cite></a>
+              <a><cite>会员管理</cite></a>
+              <a><cite>权限分类</cite></a>
+            </span>
+            <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"  href="javascript:location.replace(location.href);" title="刷新"><i class="layui-icon" style="line-height:30px">ဂ</i></a>
+        </div>
+        <div class="x-body" id="app">
+            <form class="layui-form x-center" action="" style="width:40%">
+                <div class="layui-form-pane" style="margin-top: 15px;">
+                  <div class="layui-form-item">
+                    <label class="layui-form-label">分类名</label>
+                    <div class="layui-input-inline">
+                      <input v-model="p.p_sort.sortN" type="text" name="name"  placeholder="分类名" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-input-inline" style="width:80px">
+                        <button class="layui-btn" @click="addsort()" lay-submit="" lay-filter="*"><i class="layui-icon">&#xe608;</i>添加</button>
+                    </div>
+                  </div>
+                </div> 
+            </form>
+            <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon">&#xe640;</i>批量删除</button><span class="x-right" style="line-height:40px">共有数据：88 条</span>
+            <table class="layui-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <!-- <input type="checkbox" name="" value=""> -->
+							<el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" 
+							@change="handleCheckAllChange">全选
+							</el-checkbox>
+                        </th>
+                        <th>
+                            ID
+                        </th>
+                        <th>
+                            分类名
+                        </th>
+                        <th>
+                            操作
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="x-link">
+                    <tr v-for="(p,i) in p_sortlist">
+                        <td>
+                            <!-- <input type="checkbox" value="1" name=""> -->
+							<el-checkbox-group v-model="checkedIds" @change="handleCheckedCitiesChange">
+							  <el-checkbox :label="p.p_sort.id" :key="p.p_sort.id">{{p.p_sort.id}}</el-checkbox>
+							</el-checkbox-group>
+                        </td>
+                        <td>
+                            1
+                        </td>
+                        <td>
+                            会员相关
+                        </td>
+                        <td class="td-manage">
+                            <!-- <a title="编辑" href="javascript:;" onclick="cate_edit('编辑','cate-edit.html','4','','510')"
+                            class="ml-5" style="text-decoration:none">
+                                <i class="layui-icon">&#xe642;</i>
+                            </a> -->
+							<!-- 编辑 -->
+							<template>
+								<el-button type="text" @click="p_toedit(p.p_sort,p.p_sort.id)"><i class="layui-icon">&#xe642;</i></el-button>
+							</template>
+							
+                            <!-- <a title="删除" href="javascript:;" onclick="cate_del(this,'1')" 
+                            style="text-decoration:none">
+                                <i class="layui-icon">&#xe640;</i>
+                            </a> -->
+							<template>
+								<el-button type="text" @click="p_sort_del(p.p_sort.id)"><i class="layui-icon">&#xe640;</i></el-button>
+							</template>
+							
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- <div id="page"></div> -->
+			<div class="block">
+				<span class="demonstration">完整功能</span>
+				<el-pagination
+				  @size-change="handleSizeChange"
+				  @current-change="handleCurrentChange"
+				  :current-page="1"
+				  :page-sizes="[2, 3, 4, 5]"
+				  :page-size="query.size"
+				  layout="total, sizes, prev, pager, next, jumper"
+				  :total="total">
+				</el-pagination>
+			</div>
+        </div>
+        <script src="./lib/layui/layui.js" charset="utf-8"></script>
+        <script src="./js/x-layui.js" charset="utf-8"></script>
+        <script>
+			
+			new Vue({
+				el: "#app",
+				data: {
+					dialogFormVisible: false,
+					formLabelWidth: '120px',
+					p_sort: {
+						id:'',
+						sortN:''
+					},
+					p_sortlist:[],
+					query:{
+						sortN:'',
+						page:1,
+						size:3
+					},
+					total:10,
+					ids:[],
+					// false 用来隐藏弹出框
+					showdialogFormVisible:false,//显示会员信息 控制显示
+					// showMember:{}, //定义空对象
+					// showUser:{} 
+					editdialogFormVisible:false,
+					editp_sort:{},
+					editPwddialogFormVisible:false,
+					editUsers:{},
+					
+					checkAll:false,
+					checkedIds:[],//选中的id
+					ids:[],//当前页所有id
+					isIndeterminate : false
+				},
+				methods:{
+					p_delAll(){
+						// 判断是否选中
+						if(this.checkedIds.length < 1){
+							this.$message("请选中需要删除的数据！o^o!")
+							return ;
+						}
+						// join方法 可以通过分隔符拼接成字符
+						
+						axios.get("http://localhost:8080/user/delAll",
+						{
+							params:{ids:this.checkedIds.join(',')}
+						})
+						.then((d) =>{
+							this.$message("批量删除成功")
+							// 判断当前页的数据是否删除完 如果没有删除完 就停留在当前页
+							// 如果删除完了 就设置page页 往前一页
+							// 如果是第一页删除完了，就停留在当前页
+							this.query.page=1
+							this.querylist4()
+						})
+						
+					},
+					handleCheckAllChange(val) {
+					  this.checkedIds = val ? this.ids : [];
+					  this.isIndeterminate = false;
+					},
+					handleCheckedCitiesChange(value) {
+					  console.log(value)
+					  let checkedCount = value.length;
+					  this.checkAll = checkedCount === this.ids.length;
+					  this.isIndeterminate = checkedCount > 0 && checkedCount < this.ids.length;
+					},
+					addp_sort(){
+						console.log(this.p_sort)
+						axios.get("http://localhost:8080/user/addp_sort",{params:this.p_sort})
+						.then((d) =>{
+							console.log(d)
+							// 输出信息
+							this.$message(d.data)
+							// 关闭弹窗
+							this.dialogFormVisible = false
+							this.querylist4()
+						});
+						// alert("添加成功！！")
+					},
+					querylist4(){
+						console.log(this.query)
+						axios.get("http://localhost:8080/user/querylist4",{params:this.query})
+						.then((d) =>{
+							console.log(d)
+							// 看看d到底是什么结构，把里面的usermemberlist赋值给memberlist
+							this.p_sortlist = d.data.list
+							this.total = d.data.total
+							this.ids=[]
+							this.checkedIds =[]
+							this.checkAll =false
+							this.isIndeterminate = false
+							for(var i=0 ;i<this.p_sortlist.length;i++)
+							{
+								this.ids.push(this.p_sortlist[i].p_sort.id)
+							}
+						});
+					},
+					handleSizeChange(val) {
+						console.log(`每页 ${val} 条`);
+						this.query.size = val;
+						this.querylist4()
+					  },
+					handleCurrentChange(val) {
+						console.log(`当前页: ${val}`);
+						this.query.page = val;
+						this.querylist4()
+						},
+					p_sort_del(pid) {
+						this.$confirm('是否删除该会员,是否继续?', '提示', {
+						  confirmButtonText: '确定',
+						  cancelButtonText: '取消',
+						  type: 'warning'
+						}).then(() => {
+							axios.get("http://localhost:8080/user/delp_sort",
+							{
+								params:{
+									id:mid
+								}
+							})
+							.then((d) => {
+								this.$message({
+									type: 'success',
+									message: '删除成功!'
+								});
+								this.querylist4()
+							});
+						}).catch(() => {
+						  this.$message({
+							type: 'info',
+							message: '已取消删除'
+						  });          
+						});
+					},
+					p_toedit(p,id){
+						this.editdialogFormVisible = true;
+						this.editp_sort =p ;
+						this.editp_sort.id = id;
+					},
+					updatep_sort(){
+						axios.get("http://localhost:8080/user/updatep_sort",{
+							params:this.editp_sort
+						})
+						.then((d) => {
+								this.$message ("修改会员成功!")
+									this.editdialogFormVisible=false
+								this.querylist4()
+						});
+					},
+	
+				},
+				mounted(){
+					this.querylist4()
+					
+				}
+			})
+
+            layui.use(['element','laypage','layer','form'], function(){
+              lement = layui.element();//面包导航
+              
+            });
+
+              //以上模块根据需要引入
+
+            //批量删除提交
+             function delAll () {
+                layer.confirm('确认要删除吗？',function(index){
+                    //捉到所有被选中的，发异步进行删除
+                    layer.msg('删除成功', {icon: 1});
+                });
+             }
+            
+            
+
+            //-编辑
+            function cate_edit (title,url,id,w,h) {
+                x_admin_show(title,url,w,h); 
+            }
+            
+            /*删除*/
+            function cate_del(obj,id){
+                layer.confirm('确认要删除吗？',function(index){
+                    //发异步删除数据
+                    $(obj).parents("tr").remove();
+                    layer.msg('已删除!',{icon:1,time:1000});
+                });
+            }
+            </script>
+            
+    </body>
+</html>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhanglu.bootruan78.dao.UserDao">
+    <insert id="adduser">
+        insert  into user78 values  (null,#{name},#{sex})
+    </insert>
+
+<!--    自己写sql 返回的是对象 resultType声明返回类型 值就是输入对应类的完整路径-->
+<!--    where标签 当if 里面 如果是空值的话 那么where sql 就不会生成-->
+    <select id="querylist" resultType="com.zhanglu.bootruan78.model.User78">
+        select * from user78
+        <where>
+            <if test="name !=null and name !=''">
+            and name like concat('%',#{name},'%')
+            </if>
+        </where>
+        limit #{page},#{size}
+    </select>
+
+</mapper>

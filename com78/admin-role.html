@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>
+            后台管理系统
+        </title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="format-detection" content="telephone=no">
+        <link rel="stylesheet" href="./css/x-admin.css" media="all">
+		<!--    引入 本地的 vue  省略了 static 文件夹 -->
+		<script src="./js/vue.js" type="text/javascript" charset="utf-8"></script>
+		<!--    引入本地的 axios  用来 发送异步请求-->
+		<script src="./js/axios.js" type="text/javascript" charset="utf-8"></script>
+		<!-- 引入样式 -->
+		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+		<!-- 引入组件库 -->
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    </head>
+    <body>
+        <div class="x-nav">
+            <span class="layui-breadcrumb">
+              <a><cite>首页</cite></a>
+              <a><cite>会员管理</cite></a>
+              <a><cite>角色管理</cite></a>
+            </span>
+            <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"  href="javascript:location.replace(location.href);" title="刷新"><i class="layui-icon" style="line-height:30px">ဂ</i></a>
+        </div>
+        <div class="x-body" id="app">
+            
+            <!-- <button class="layui-btn layui-btn-danger" onclick="delAll()">
+				<i class="layui-icon">&#xe640;</i>批量删除</button> -->
+				<button class="layui-btn layui-btn-danger" @click="r_delAll()"><i
+					class="layui-icon">&#xe640;</i>批量删除</button>
+				<!-- <button class="layui-btn" onclick="role_add('添加用户','role-add.html','900','500')">
+					<i class="layui-icon">&#xe608;</i>添加</button> -->
+					<span class="x-right" style="line-height:40px">共有数据：<span class="layui-badge">{{total}}</span>  条</span>
+					
+					<!-- 添加角色 -->
+				<el-button type="primary" class="layui-btn" @click="dialogFormVisible = true">
+					<i class="layui-icon">&#xe608;</i>添加角色</el-button>
+		
+					<el-dialog title="角色添加" :visible.sync="dialogFormVisible" top="1vh">
+						<el-form :model="role">
+							<!-- <el-form-item label="角色名" :label-width="formLabelWidth"  >
+								<el-input v-model="role.roleN" autocomplete="off" placeholder="请输入角色名"></el-input>
+							</el-form-item> -->
+							 <el-form-item label="角色名" :label-width="formLabelWidth">
+								<el-select v-model="role.roleN" placeholder="请选择角色">
+									<el-option label="超级管理员" value="超级管理员"></el-option>
+									<el-option label="编辑人员" value="编辑人员"></el-option>
+									<el-option label="问题维护" value="问题维护"></el-option>
+								</el-select>
+							</el-form-item>
+								<el-form-item label="拥有权限" :label-width="formLabelWidth">
+									<table  class="layui-table layui-input-block">
+									  <tbody>
+										  <tr>
+											  <td>
+												  用户管理
+											  </td>
+
+											  <td>
+												  <template>
+												      <el-checkbox v-for="(item,index) in userarr" 
+													  :key="index" true_label="1" false_label="0" 
+													  @change="checked=>handleCheckeduserChange(checked,item) in userarr">{{item}}
+													  </el-checkbox>
+												  </template>  
+												  <!-- <template>
+												    <el-checkbox-group @change="choices=>handleCheckeduserChange(value,index) in userarr">
+												      <el-checkbox v-for="(value,index) in userarr" :key="index" label_t="1" label_f="0">{{city}}</el-checkbox>
+												    </el-checkbox-group>
+												  </template> -->
+												  <!-- <div>
+													 <input v-model="role.permission" name="id[]" type="checkbox" value="2"> 用户停用
+													  <input v-model="role.permission" name="id[]" type="checkbox" value="2"> 用户删除
+													  <input v-model="role.permission" name="id[]" type="checkbox" value="2"> 用户修改
+													  <input v-model="role.permission" name="id[]" type="checkbox" value="2"> 用户改密
+													  <input v-model="role.permission" name="id[]" type="checkbox" value="2"> 用户列表
+													  <template>
+													      <el-checkbox v-for="(value,index) in userarr" :key="index" label_t="1" label_f="0" @change="choices=>handleCheckeduserChange(value,index) in userarr">{{city}}</el-checkbox>
+													  </template>
+
+												  </div> -->
+															
+											  </td>
+										  </tr>
+										  <tr>
+											  <td>
+												  文章管理
+											  </td>
+											  <td>
+												  <template>
+												      <el-checkbox v-for="(item,index) in artclearr" :key="index" true_label="1" false_label="0" @change="checked=>handleCheckedartcleChange(checked,item) in artclearr">{{item}}</el-checkbox>
+												  </template>  
+												  <!-- <div> -->
+													  <!-- <input v-model="role.permission" name="id[]" type="checkbox" value="2"> 文章添加
+													  <input v-model="role.permission" name="id[]" type="checkbox" value="2"> 文章删除
+													  <input v-model="role.permission" name="id[]" type="checkbox" value="2"> 文章修改
+													  <input v-model="role.permission" name="id[]" type="checkbox" value="2"> 文章改密
+													  <input v-model="role.permission" name="id[]" type="checkbox" value="2"> 文章列表 -->
+												  <!-- </div> -->
+											  </td>
+										  </tr>
+									  </tbody>
+									</table>
+								</el-form-item>	
+							
+							 <el-form-item label="描述" :label-width="formLabelWidth"  >
+								<el-input v-model="role.r_describe" autocomplete="off" placeholder="请输入内容"></el-input>
+							</el-form-item>
+							
+						</el-form>
+						<div slot="footer" class="dialog-footer">
+							<el-button @click="dialogFormVisible = false">取 消</el-button>
+							<el-button type="primary" @click="addrole()">确 定</el-button>
+						</div> 
+				</el-dialog>
+					
+					
+            <table class="layui-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <!-- <input type="checkbox" name="" value=""> -->
+							<el-checkbox :indeterminate="isIndeterminate" v-model="checkAll"
+							@change="handleCheckAllChange">全选
+							</el-checkbox>
+                        </th>
+                        <th>
+                            ID
+                        </th>
+                        <th>
+                            角色名
+                        </th>
+                        <th>
+                            拥有权限
+                        </th>
+                        <th>
+                            描述
+                        </th>
+                        <th>
+                            操作
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(r,i) in rolelist">
+                        <td>
+                            <!-- <input type="checkbox" value="1" name=""> -->
+							<el-checkbox-group v-model="checkedIds" @change="handleCheckedCitiesChange">
+							  <el-checkbox :label="r.role.id" :key="r.role.id">{{r.role.id}}</el-checkbox>
+							</el-checkbox-group>
+                        </td>
+                        <td>
+                            {{r.role.id}}
+                        </td>
+                        <td>
+                            {{r.role.roleN}}
+                        </td>
+                        <td >
+                            {{r.role.permission}}
+                        </td>
+                        <td >
+                           {{r.role.r_describe}}
+                        </td>
+                        <td class="td-manage">
+                            <!-- <a title="编辑" href="javascript:;" onclick="role_edit('编辑','role-edit.html','4','','510')"
+                            class="ml-5" style="text-decoration:none">
+                                <i class="layui-icon">&#xe642;</i>
+                            </a> -->
+							<template>
+								<el-button type="text" @click="r_toedit(r.role,r.role.id)"><i class="layui-icon">&#xe642;</i></el-button>
+							</template>
+                            <!-- <a title="删除" href="javascript:;" onclick="role_del(this,'1')" 
+                            style="text-decoration:none">
+                                <i class="layui-icon">&#xe640;</i>
+                            </a> -->
+							<template>
+								<el-button type="text" @click="role_del(r.role.id)"><i class="layui-icon">&#xe640;</i></el-button>
+							</template>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- <div id="page"></div> -->
+			<div class="block">
+				<span class="demonstration">完整功能</span>
+				<el-pagination
+				  @size-change="handleSizeChange"
+				  @current-change="handleCurrentChange"
+				  :current-page="1"
+				  :page-sizes="[2, 3, 4, 5]"
+				  :page-size="query.size"
+				  layout="total, sizes, prev, pager, next, jumper"
+				  :total="total">
+				</el-pagination>
+			</div>
+			<!-- 角色名修改 -->
+			<el-dialog title="角色名修改" :visible.sync="editdialogFormVisible" top="1vh">
+				<div class="x-body">
+					<form class="layui-form">
+						<div class="layui-form-item">
+							<label for="L_roleN" class="layui-form-label">
+								角色名
+							</label>
+							<div class="layui-input-inline">
+								<input v-model="editRole.roleN" input type="text" id="L_roleN" name="roleN" required lay-verify="roleN"
+								autocomplete="off" value="超级管理员" class="layui-input">
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<label for="L_permission" class="layui-form-label">
+								权限
+							</label>
+							<div class="layui-input-inline">
+								<input v-model="editRole.permission" input type="text" id="L_permission" name="permission" required lay-verify="permission"
+								autocomplete="off" value="文章管理" class="layui-input">
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<label for="L_r_describe" class="layui-form-label">
+								描述
+							</label>
+							<div class="layui-input-inline">
+								<input v-model="editRole.r_describe" input type="text" id="L_r_describe" name="r_describe" required lay-verify="required"
+								autocomplete="off" value="zhibinm" class="layui-input">
+							</div>
+							
+						</div>
+						
+					</form>
+				</div>
+				<div slot="footer" class="dialog-footer">
+					<el-button @click="editdialogFormVisible = false">取 消</el-button>
+					<el-button type="primary" @click="updateRole()">确 定</el-button>
+				</div>
+			</el-dialog>
+        </div>
+        <script src="./lib/layui/layui.js" charset="utf-8"></script>
+        <script src="./js/x-layui.js" charset="utf-8"></script>
+        <script>
+			// const cityOptions1 = ['用户停用', '用户删除','用户修改','用户改密','用户列表'];
+			new Vue({
+				el: '#app',
+				// userarr:['用户停用', '用户删除','用户修改','用户改密','用户列表'];
+				
+				data:{
+					userarr:['用户停用', '用户删除','用户修改','用户改密','用户列表'],
+					artclearr:['文章添加','文章删除','文章修改','文章改密','文章列表'],
+					choiceArr:[],//存放勾选的值
+					dialogFormVisible: false,
+					formLabelWidth: '120px',
+					role: {
+						roleN: '',
+						id:'',
+						permission:'',
+						r_describe:''
+					},
+					rolelist:[],
+					query:{
+						roleN:'',
+						page:1,
+						size:3
+					},
+					total:10,
+					editRole:{},
+					editdialogFormVisible:false,
+					editPwddialogFormVisible:false,
+					checkAll:false,
+					checkedIds:[],//选中的id
+					ids:[],//当前页所有id
+					isIndeterminate : false,
+					
+					// checkedUsers:[],
+					// users:['用户停用', '用户删除','用户修改','用户改密','用户列表']
+					// checked_u:['用户停用', '用户删除','用户修改','用户改密','用户列表'],
+				 //        cities1: cityOptions1,
+					 
+				},
+				methods:{
+					handleCheckeduserChange(value,item){
+						console.log(item)//数组里面的数据值
+						// console.log(this.userarr.indexOf(this.userarr.name))//控制台打印显示-1
+						console.log(value)//是否选中，选中true，未选中 false
+						if(value == 1){
+							this.choiceArr.push(item);
+						}else{
+							this.choiceArr.splice(this.choiceArr.indexOf(item),1);
+						}
+						console.log(this.choiceArr)
+					},
+					handleCheckedartcleChange(value,item){
+						console.log(item)//数组里面的数据值
+						// console.log(this.userarr.indexOf(this.userarr.name))//控制台打印显示-1
+						console.log(value)//是否选中，选中true，未选中 false
+						if(value == true){
+							this.choiceArr.push(item);
+						}else{
+							this.choiceArr.splice(this.choiceArr.indexOf(item),1);
+						}
+						console.log(this.choiceArr)
+					},
+					// 显示角色表数据
+					querylist3(){
+						console.log(this.query)
+						axios.get("http://localhost:8080/user/querylist3",{params:this.query})
+						.then((d) =>{
+							console.log(d)
+							// 看看d到底是什么结构，把里面的useradminlist赋值给adminlist
+							this.rolelist = d.data.list
+							this.total = d.data.total
+							this.ids=[]
+							this.checkedIds =[]
+							this.checkAll =false
+							this.isIndeterminate = false
+							for(var i=0 ;i<this.rolelist.length;i++)
+							{
+								this.ids.push(this.rolelist[i].role.id)
+							}
+						});
+					},
+					// 添加角色
+					addrole(){
+						this.role.permission=this.choiceArr.toString()
+						console.log(this.role)
+						// 用户名或密码必须有
+						if(this.role.roleN == '')
+						{
+							this.$message({
+							message: '未选择角色名！',
+							type: 'warning'
+							});
+							return ;
+						}
+						// 把数据传递给后端 进行添加操作
+						axios.get("http://localhost:8080/user/addrole",{params:this.role})
+						.then((d) =>{
+							console.log(d)
+							// 输出信息
+							this.$message(d.data)
+							// 关闭弹窗
+							this.dialogFormVisible = false
+							this.querylist3()
+						});
+						// alert("添加成功！！")
+					},
+					handleSizeChange(val) {
+						console.log(`每页 ${val} 条`);
+						this.query.size = val;
+						this.querylist3()
+					  },
+					handleCurrentChange(val) {
+						console.log(`当前页: ${val}`);
+						this.query.page = val;
+						this.querylist3()
+						},
+					handleCheckAllChange(val) {
+					  this.checkedIds = val ? this.ids : [];
+					  this.isIndeterminate = false;
+					},
+					handleCheckedCitiesChange(value) {
+					  console.log(value)
+					  let checkedCount = value.length;
+					  this.checkAll = checkedCount === this.ids.length;
+					  this.isIndeterminate = checkedCount > 0 && checkedCount < this.ids.length;
+					},	
+					
+					r_toedit(r,id){
+						this.editdialogFormVisible = true;
+						this.editRole =r ;
+						this.editRole.id = id;
+					},
+					updateRole(){
+						axios.get("http://localhost:8080/user/updateRole",{
+							params:this.editRole
+						})
+						.then((d) => {
+								this.$message ("修改会员成功!")
+									this.editdialogFormVisible=false
+								this.querylist3()
+						});
+					},
+					role_del(rid) {
+					  	this.$confirm('是否删除该会员,是否继续?', '提示', {
+					  	  confirmButtonText: '确定',
+					  	  cancelButtonText: '取消',
+					  	  type: 'warning'
+					  	}).then(() => {
+					  		axios.get("http://localhost:8080/user/delRole",
+					  		{
+					  			params:{
+					  				id:rid
+					  			}
+					  		})
+					  		.then((d) => {
+					  			this.$message({
+					  				type: 'success',
+					  				message: '删除成功!'
+					  			});
+					  			this.querylist3()
+					  		});
+					  	}).catch(() => {
+					  	  this.$message({
+					  		type: 'info',
+					  		message: '已取消删除'
+					  	  });          
+					  	});
+					},
+					// 批量删除
+					r_delAll(){
+						// 判断是否选中
+						if(this.checkedIds.length < 1){
+							this.$message("请选中需要删除的数据！o^o!")
+							return ;
+						}
+						// join方法 可以通过分隔符拼接成字符
+						
+						axios.get("http://localhost:8080/user/r_delAll",
+						{
+							params:{ids:this.checkedIds.join(',')}
+						})
+						.then((d) =>{
+							this.$message("批量删除成功")
+							// 判断当前页的数据是否删除完 如果没有删除完 就停留在当前页
+							// 如果删除完了 就设置page页 往前一页
+							// 如果是第一页删除完了，就停留在当前页
+							this.query.page=1
+							this.querylist3()
+						})
+						
+					},
+				},
+				mounted(){
+					this.querylist3()
+					
+				}
+			})
+			
+            layui.use(['laydate','element','laypage','layer'], function(){
+              lement = layui.element();//面包导航
+
+
+              //以上模块根据需要引入
+            });
+
+            //批量删除提交
+             function delAll () {
+                layer.confirm('确认要删除吗？',function(index){
+                    //捉到所有被选中的，发异步进行删除
+                    layer.msg('删除成功', {icon: 1});
+                });
+             }
+             /*添加*/
+            function role_add(title,url,w,h){
+                x_admin_show(title,url,w,h);
+            }
+
+             
+            //编辑
+            function role_edit (title,url,id,w,h) {
+                x_admin_show(title,url,w,h); 
+            }
+            /*删除*/
+            function role_del(obj,id){
+                layer.confirm('确认要删除吗？',function(index){
+                    //发异步删除数据
+                    $(obj).parents("tr").remove();
+                    layer.msg('已删除!',{icon:1,time:1000});
+                });
+            }
+            </script>
+            
+    </body>
+</html>

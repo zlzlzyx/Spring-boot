@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script src="./js/vue.js" type="text/javascript" charset="utf-8"></script>
+		<!-- 引入样式 -->
+		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+		<!-- 引入组件库 -->
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+	</head>
+	<body>
+		
+	
+		<div id="app">
+			<template>
+			  <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+			  <div style="margin: 15px 0;"></div>
+			  <el-checkbox-group v-model="checkedCities" @change="handleCheckedCitiesChange">
+			    <el-checkbox v-for="city in cities" :label="city" :key="city">{{city}}</el-checkbox>
+			  </el-checkbox-group>
+			</template>
+			
+			
+		</div>
+		
+		<script>
+			// 下面选项的初始值 多选框总的数组长度 
+		 // const cityOptions = ['上海', '北京', '广州', '深圳'];
+		 new Vue({
+			 el:"#app",
+			 data:{
+				 	// <!-- v-model="checkAll"   true全选   false 非全选-->
+				 checkAll: false,
+				 // checkedCities: ['上海', '北京'],
+				 // checkedCities 页面进入默认勾选的选项值
+				 checkedCities: ['上海',],
+				 // vue 定义了一个总的多选框的变量 直接把上面的赋值给他
+				 cities: ['上海', '北京', '广州', '深圳'],
+				 // <!--  this.isIndeterminate 全选按钮的横杠  多选框中选中了一部分按钮就会出现横杠-->
+				 // true 有选中的 false  1.全选了 2.一个都没选
+				 isIndeterminate: false
+			 },
+			 methods:{
+				 handleCheckAllChange(val) {
+					 console.log(val);
+					 console.log(this.checkedCities)
+				   // this.checkedCities = val ? cityOptions : [];
+				   // true全选  false非全选
+				   // 1.val? this.cities:[]
+				   // 2.val ?true ->this.checkedCities=this.cities
+				   // 3.val ?false ->this.checkedCities=[]
+				   this.checkedCities = val ? this.cities : [];
+				   console.log(this.checkedCities)
+				   this.isIndeterminate = false;
+				 },
+				 handleCheckedCitiesChange(value) {
+					 console.log(value);
+					 // checkedCount 定义了一个数字变量 把选中的数值的长度赋值给他
+				   let checkedCount = value.length;
+				   //   checkedCount = this.cities.length;
+				   // 整个数组的长度和选中的数组长度 返回true 不等返回false
+				   
+				   console.log(value.length);
+				   // this.checkAll = true
+				   console.log(this.checkAll);
+				   // -这个符号 什么都不会显示
+				   // checkedCount > 0 && checkedCount < this.cities.length; 至少选一个
+				   // 并且同时满足条件
+				   //  checkedCount<this.cities.length 选中的框不能全选
+				   // 以当前这个例子 0-5之间
+				   // 满足这两个条件返回true 一个满足或全不满足返回false
+				   this.checkAll = checkedCount === this.cities.length;
+				   this.isIndeterminate = checkedCount > 0 && checkedCount < this.cities.length;
+				 }
+			 },
+			 mounted(){
+				 console.log(this.checkAll)
+			 }
+		 })
+		</script>
+	</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html  xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>hello world</h1>
+
+<!--模拟登陆-->
+<!--thymeleaf th开头-->
+<!--th:action="" form 表单 所请求的web接口地址-->
+<!--@开头 {}里面写我们web接口的url 省略了前面的ip端口-->
+<form th:action="@{/login}">
+<!--    name="name" 后面的"name"代表的后端端口的参数名称-->
+    用户名：<input name="name"/>
+    <br>
+    性别：<input name="sex"/>
+    <br>
+    <button type="submit">登录提交</button>
+<!--    type="sumbit" 指定按钮的提交是表单提交 当单击按钮后 就会访问这个function里面的接口-->
+</form>
+<br> <br>
+<form th:action="@{/update}">
+    需要修改的用户id：<input name="id"/>
+    <br>
+    <!--    name="name" 后面的"name"代表的后端端口的参数名称-->
+    用户名：<input name="name"/>
+    <br>
+    性别：<input name="sex"/>
+    <br>
+    <button type="submit">修改提交</button>
+    <!--    type="sumbit" 指定按钮的提交是表单提交 当单击按钮后 就会访问这个function里面的接口-->
+</form>
+
+<form th:action="@{/delete}">
+    需要删除的用户id：<input name="id"/>
+    <br>
+<!--    &lt;!&ndash;    name="name" 后面的"name"代表的后端端口的参数名称&ndash;&gt;-->
+<!--    用户名：<input name="name"/>-->
+<!--    <br>-->
+<!--    性别：<input name="sex"/>-->
+<!--    <br>-->
+    <button type="submit">删除提交</button>
+    <!--    type="sumbit" 指定按钮的提交是表单提交 当单击按钮后 就会访问这个function里面的接口-->
+</form>
+<!-- <button type="submit">登录提交</button>-->
+
+<br> <br>
+<form th:action="@{/adduser}">
+<!--    需要添加的用户id：<input name="id"/>-->
+<!--    <br>-->
+    <!--    name="name" 后面的"name"代表的后端端口的参数名称-->
+    需要添加的用户名：<input name="name"/>
+    <br>
+    需要添加的性别：<input name="sex"/>
+    <br>
+    <button type="submit">添加提交</button>
+    <!--    type="sumbit" 指定按钮的提交是表单提交 当单击按钮后 就会访问这个function里面的接口-->
+</form>
+</body>
+</html>
